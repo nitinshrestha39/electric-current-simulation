@@ -3,225 +3,365 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Electric Current Simulation</title>
+    <title>LED Brightness Simulation</title>
     <style>
-        /* Reset default margins and set up the page */
         body {
-            margin: 0;
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #222;
         }
-
-        /* Container for the animation */
-        .animation-container {
-            width: 80%;
+        
+        .container {
+            width: 90%;
             max-width: 800px;
-            position: relative;
-            margin-bottom: 2rem;
+            margin: 20px auto;
+            color: #eee;
         }
-
-        /* Container for electrons */
-        .electrons-container {
+        
+        .wire-container {
+            position: relative;
             width: 100%;
-            height: 20px; /* Reduced height to match smaller electrons */
-            position: relative;
-            margin-bottom: 10px;
+            height: 100px;
+            margin: 50px 0;
         }
-
-        /* Style the wire */
+        
         .wire {
+            position: absolute;
+            left: 0;
             width: 100%;
             height: 2px;
-            background-color: #333;
-            position: relative;
+            background-color: #777;
+            z-index: 1;
         }
-
-        /* Style individual electrons */
-        .electron {
-            width: 10px; /* Reduced from 30px to 10px */
-            height: 10px; /* Reduced from 30px to 10px */
-            background-color: #4CAF50;
-            border-radius: 50%;
+        
+        .led-container {
             position: absolute;
-            top: 5px; /* Adjusted to center the smaller electron */
-            left: 0;
-            box-shadow: 0 0 5px #4CAF50; /* Reduced glow effect */
-            transition: background-color 0.3s;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            text-align: center;
         }
-
-        /* Style the controls container */
+        
+        .led-label {
+            color: #eee;
+            font-size: 14px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        
+        .led {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #ff0000;
+            background-color: rgba(255, 0, 0, 0.1);
+            margin: 0 auto;
+            overflow: visible;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .led-glow {
+            position: absolute;
+            width: 0%;
+            height: 0%;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle, 
+                rgba(255, 0, 0, 1) 0%, 
+                rgba(255, 50, 50, 0.9) 40%, 
+                rgba(255, 100, 100, 0.5) 70%, 
+                rgba(255, 150, 150, 0) 100%
+            );
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.15s ease-out;
+            opacity: 0;
+            filter: blur(1px);
+        }
+        
+        .led-damage {
+            position: absolute;
+            width: 0%;
+            height: 0%;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle, 
+                rgba(0, 0, 0, 1) 0%, 
+                rgba(50, 0, 0, 0.9) 40%, 
+                rgba(100, 0, 0, 0.7) 70%, 
+                rgba(150, 0, 0, 0) 100%
+            );
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .led-rays {
+            position: absolute;
+            width: 0%;
+            height: 0%;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle, 
+                rgba(255, 50, 50, 0.8) 0%,
+                rgba(255, 100, 100, 0.5) 50%, 
+                rgba(255, 150, 150, 0.2) 70%, 
+                rgba(255, 200, 200, 0) 100%
+            );
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.15s ease-out;
+            opacity: 0;
+            filter: blur(2px);
+        }
+        
+        .electron {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #00aaff;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            box-shadow: 0 0 5px #00aaff;
+            transition: opacity 0.3s ease;
+        }
+        
         .controls {
-            width: 80%;
-            max-width: 800px;
+            margin-top: 40px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .slider-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 1rem;
-            margin-top: 2rem;
         }
-
-        /* Style the speed display */
-        .speed-display {
-            font-size: 1.2rem;
-            color: #333;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Style the slider */
+        
         input[type="range"] {
-            width: 100%;
-            margin: 1rem 0;
-        }
-
-        /* Style the play/pause button */
-        .play-pause-btn {
-            padding: 0.5rem 1rem;
-            font-size: 1rem;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
+            width: 80%;
+            max-width: 500px;
+            margin: 10px 0;
+            background: #444;
+            height: 8px;
             border-radius: 4px;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff3333;
             cursor: pointer;
-            transition: background-color 0.3s;
         }
-
-        .play-pause-btn:hover {
-            background-color: #45a049;
+        
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #eee;
         }
-
-        .play-pause-btn.paused {
-            background-color: #f44336;
+        
+        .current-value {
+            font-size: 14px;
+            color: #aaa;
         }
-
-        .play-pause-btn.paused:hover {
-            background-color: #da190b;
+        
+        .warning {
+            color: #ff5555;
+            font-weight: bold;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
     </style>
 </head>
 <body>
-    <div class="animation-container">
-        <div class="electrons-container" id="electronsContainer"></div>
-        <div class="wire"></div>
-    </div>
-    <div class="controls">
-        <div class="speed-display">Electron Speed: <span id="speedValue">5</span></div>
-        <input type="range" id="speedSlider" min="1" max="10" value="5">
-        <button class="play-pause-btn" id="playPauseBtn">Pause</button>
+    <div class="container">
+        <h1>LED Brightness Simulation</h1>
+        <p>Adjust the current flow to see how it affects the LED brightness</p>
+        
+        <div class="wire-container">
+            <div class="wire" id="wire"></div>
+            <div class="led-container" id="led-container">
+                <div class="led-label">LED</div>
+                <div class="led" id="led">
+                    <div class="led-glow" id="led-glow"></div>
+                    <div class="led-rays" id="led-rays"></div>
+                    <div class="led-damage" id="led-damage"></div>
+                </div>
+            </div>
+            <!-- Electrons will be added dynamically -->
+        </div>
+        
+        <div class="controls">
+            <div class="slider-container">
+                <label for="current-slider">Current Flow</label>
+                <input type="range" id="current-slider" min="0" max="100" value="0">
+                <div class="current-value">Current: 0%</div>
+                <div class="warning" id="warning">WARNING: LED DAMAGED!</div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Constants
-        const ELECTRON_SIZE = 10; // Size of electron in pixels
-        const ELECTRON_SPACING = ELECTRON_SIZE * 50; // Spacing is 16 times the electron size (increased from 8)
-        const MIN_SPEED = 1;
-        const MAX_SPEED = 10;
-
-        // Get DOM elements
-        const electronsContainer = document.getElementById('electronsContainer');
-        const speedSlider = document.getElementById('speedSlider');
-        const speedValue = document.getElementById('speedValue');
-        const wire = document.querySelector('.wire');
-        const playPauseBtn = document.getElementById('playPauseBtn');
-
-        // Animation state
-        let electrons = []; // Array to store active electrons
-        let speed = 1; // Default speed
-        let lastSpawnTime = 0; // Track last electron spawn time
-        let spawnInterval = ELECTRON_SPACING / speed; // Dynamic spawn interval
-        let animationId;
-        let isPlaying = true;
-
-        // Electron class to manage individual electrons
-        class Electron {
-            constructor() {
-                this.element = document.createElement('div');
-                this.element.className = 'electron';
-                this.position = 0;
-                electronsContainer.appendChild(this.element);
-            }
-
-            update() {
-                this.position += speed;
-                this.element.style.left = `${this.position}px`;
-                return this.position < wire.offsetWidth;
-            }
-
-            remove() {
-                this.element.remove();
-            }
-        }
-
-        // Function to calculate spawn interval based on speed
-        function calculateSpawnInterval() {
-            return ELECTRON_SPACING / speed;
-        }
-
-        // Function to spawn new electrons
-        function spawnElectron() {
-            const currentTime = performance.now();
-            if (currentTime - lastSpawnTime >= spawnInterval) {
-                electrons.push(new Electron());
-                lastSpawnTime = currentTime;
-            }
-        }
-
-        // Main animation function
-        function animate() {
-            if (!isPlaying) return;
-
-            // Spawn new electrons
-            spawnElectron();
-
-            // Update existing electrons
-            electrons = electrons.filter(electron => {
-                const isActive = electron.update();
-                if (!isActive) {
-                    electron.remove();
-                }
-                return isActive;
-            });
-
-            // Continue animation
-            animationId = requestAnimationFrame(animate);
-        }
-
-        // Function to update speed
-        function updateSpeed() {
-            speed = parseInt(speedSlider.value);
-            speedValue.textContent = speed;
-            spawnInterval = calculateSpawnInterval();
-        }
-
-        // Function to toggle play/pause
-        function togglePlayPause() {
-            isPlaying = !isPlaying;
-            playPauseBtn.textContent = isPlaying ? 'Pause' : 'Play';
-            playPauseBtn.classList.toggle('paused', !isPlaying);
+        document.addEventListener('DOMContentLoaded', function() {
+            const wireContainer = document.querySelector('.wire-container');
+            const wire = document.getElementById('wire');
+            const ledContainer = document.getElementById('led-container');
+            const led = document.getElementById('led');
+            const ledGlow = document.getElementById('led-glow');
+            const ledRays = document.getElementById('led-rays');
+            const ledDamage = document.getElementById('led-damage');
+            const currentSlider = document.getElementById('current-slider');
+            const currentValueDisplay = document.querySelector('.current-value');
+            const warning = document.getElementById('warning');
             
-            if (isPlaying) {
-                animate();
-            } else {
-                cancelAnimationFrame(animationId);
+            let isDamaged = false;
+            let animationId;
+            let electrons = [];
+            let electronSpeed = 0;
+            const electronSpacing = 30;
+            let lastElectronTime = 0;
+            
+            // Position the wire exactly at the center of the LED
+            const ledRect = led.getBoundingClientRect();
+            const containerRect = wireContainer.getBoundingClientRect();
+            const ledCenterY = ledRect.top + ledRect.height/2 - containerRect.top;
+            
+            wire.style.top = `${ledCenterY}px`;
+            
+            // Update current value display
+            currentSlider.addEventListener('input', function() {
+                const value = this.value;
+                currentValueDisplay.textContent = `Current: ${value}%`;
+                
+                // Reset damage if current goes below 90%
+                if (value < 90 && isDamaged) {
+                    isDamaged = false;
+                    warning.style.opacity = '0';
+                }
+                
+                // Check for damage threshold
+                if (value >= 90 && !isDamaged) {
+                    isDamaged = true;
+                    warning.style.opacity = '1';
+                }
+                
+                electronSpeed = value / 10;
+                updateLedBrightness(value);
+            });
+            
+            // Update LED brightness based on current value
+            function updateLedBrightness(current) {
+                const intensity = current / 100;
+                const power = Math.pow(intensity, 0.6);
+                
+                if (isDamaged) {
+                    // DAMAGED STATE
+                    ledDamage.style.width = '100%';
+                    ledDamage.style.height = '100%';
+                    ledDamage.style.opacity = '1';
+                    
+                    ledGlow.style.opacity = '0';
+                    ledRays.style.opacity = '0';
+                    led.style.borderColor = '#ff0000';
+                    led.style.backgroundColor = 'rgba(50, 0, 0, 0.5)';
+                    led.style.boxShadow = '0 0 15px rgba(255, 0, 0, 0.7)';
+                    
+                    // Hide all electrons
+                    document.querySelectorAll('.electron').forEach(el => {
+                        el.style.opacity = '0';
+                    });
+                } else {
+                    // NORMAL STATE
+                    ledDamage.style.opacity = '0';
+                    
+                    // Main glow effect
+                    const glowSize = power * 150;
+                    const glowOpacity = power * 1.5;
+                    
+                    ledGlow.style.width = `${glowSize}%`;
+                    ledGlow.style.height = `${glowSize}%`;
+                    ledGlow.style.opacity = Math.min(glowOpacity, 1);
+                    ledGlow.style.filter = `blur(${Math.min(1, power)}px)`;
+                    
+                    // Rays effect
+                    const raysSize = power * 250;
+                    const raysOpacity = Math.max(0, (power - 0.3) * 1.5);
+                    
+                    ledRays.style.width = `${raysSize}%`;
+                    ledRays.style.height = `${raysSize}%`;
+                    ledRays.style.opacity = raysOpacity;
+                    
+                    // LED body glow
+                    led.style.backgroundColor = `rgba(255, 0, 0, ${power * 0.3})`;
+                    led.style.boxShadow = `0 0 ${power * 15}px rgba(255, 0, 0, ${power * 0.5})`;
+                    led.style.borderColor = '#ff0000';
+                }
             }
-        }
-
-        // Event listeners
-        speedSlider.addEventListener('input', updateSpeed);
-        playPauseBtn.addEventListener('click', togglePlayPause);
-
-        // Start the animation
-        animate();
-
-        // Clean up animation and remove all electrons on page unload
-        window.addEventListener('unload', () => {
-            cancelAnimationFrame(animationId);
-            electrons.forEach(electron => electron.remove());
+            
+            // Create a new electron
+            function createElectron() {
+                if (isDamaged) return; // Don't create electrons if damaged
+                
+                const electron = document.createElement('div');
+                electron.className = 'electron';
+                electron.style.left = '0px';
+                electron.style.top = `${ledCenterY}px`;
+                wireContainer.appendChild(electron);
+                electrons.push({
+                    element: electron,
+                    position: 0
+                });
+            }
+            
+            // Animation loop
+            function animate(timestamp) {
+                if (electronSpeed > 0 && !isDamaged) {
+                    if (timestamp - lastElectronTime > (electronSpacing / electronSpeed) * 16) {
+                        createElectron();
+                        lastElectronTime = timestamp;
+                    }
+                }
+                
+                electrons.forEach(electron => {
+                    electron.position += electronSpeed;
+                    electron.element.style.left = `${electron.position}px`;
+                    
+                    if (electron.position > wireContainer.offsetWidth) {
+                        electron.element.remove();
+                    }
+                });
+                
+                electrons = electrons.filter(electron => {
+                    return electron.position <= wireContainer.offsetWidth;
+                });
+                
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            // Start animation
+            animationId = requestAnimationFrame(animate);
+            
+            // Initialize
+            updateLedBrightness(currentSlider.value);
         });
     </script>
 </body>
-</html> 
+</html>
